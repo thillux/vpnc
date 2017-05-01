@@ -1898,7 +1898,7 @@ static void do_phase1_am_packet2(struct sa_block *s, const char *shared_key)
 			gcry_md_close(hm);
 			hex_dump("skeyid_e", skeyid_e, s->ike.md_len, NULL);
 
-			memset(dh_shared_secret, 0, sizeof(dh_shared_secret));
+			memset(dh_shared_secret, 0, dh_getlen(s->ike.dh_grp));
 			free(dh_shared_secret);
 
 			/* Determine the IKE encryption key.  */
