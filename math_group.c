@@ -246,6 +246,7 @@ static void modp_getraw(struct group *grp, gcry_mpi_t v, unsigned char *d)
 	ret = gcry_mpi_aprint(GCRYMPI_FMT_STD, &tmp, &l2, v);
 	memcpy(d, tmp + (l2 - l), l);
 	gcry_free(tmp);
+	(void) ret; /* unused */
 #if 0
 	{
 		char *p;
@@ -260,7 +261,7 @@ static int modp_setraw(struct group *grp, gcry_mpi_t d, unsigned char *s, int l)
 {
 	int i;
 
-	grp = NULL; /* unused */
+	(void) grp; /* unused */
 
 	gcry_mpi_set_ui(d, 0);
 	for (i = 0; i < l; i++) {

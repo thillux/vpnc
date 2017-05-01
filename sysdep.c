@@ -516,7 +516,7 @@ int tun_close(int fd, char *dev)
 #else
 int tun_close(int fd, char *dev)
 {
-	dev = NULL; /*unused */
+	(void) dev; /*unused */
 	return close(fd);
 }
 #endif
