@@ -354,9 +354,12 @@ static const char *config_def_app_version(void)
 {
 	struct utsname uts;
 	char *version;
+	int ret;
 
 	uname(&uts);
-	asprintf(&version, "Cisco Systems VPN Client %s:%s", VERSION, uts.sysname);
+	ret = asprintf(&version, "Cisco Systems VPN Client %s:%s", VERSION, uts.sysname);
+	if (ret == -1)
+		error(1, errno, "can't build app version string");
 	return version;
 }
 
@@ -657,8 +660,11 @@ static const struct config_names_s {
 static char *get_config_filename(const char *name, int add_dot_conf)
 {
 	char *realname;
+	int ret;
 
-	asprintf(&realname, "%s%s%s", index(name, '/') ? "" : "/etc/vpnc/", name, add_dot_conf ? ".conf" : "");
+	ret = asprintf(&realname, "%s%s%s", index(name, '/') ? "" : "/etc/vpnc/", name, add_dot_conf ? ".conf" : "");
+	if (ret == -1)
+		error(1, errno, "can't build config file path");
 	return realname;
 }
 
@@ -831,7 +837,7 @@ static void print_version(void)
 void do_config(int argc, char **argv)
 {
 	char *s, *prompt;
-	int i, c, known;
+	int i, c, known, ret;
 	int got_conffile = 0, print_config = 0;
 	size_t s_len;
 
@@ -979,16 +985,20 @@ void do_config(int argc, char **argv)
 			printf("Enter IPSec ID for %s: ", config[CONFIG_IPSEC_GATEWAY]);
 			break;
 		case CONFIG_IPSEC_SECRET:
-			asprintf(&prompt, "Enter IPSec secret for %s@%s: ",
+			ret = asprintf(&prompt, "Enter IPSec secret for %s@%s: ",
 				config[CONFIG_IPSEC_ID], config[CONFIG_IPSEC_GATEWAY]);
+			if (ret == -1)
+				error(1, errno, "can't build IPsec secret question string");
 			break;
 		case CONFIG_XAUTH_USERNAME:
 			printf("Enter username for %s: ", config[CONFIG_IPSEC_GATEWAY]);
 			break;
 		case CONFIG_XAUTH_PASSWORD:
-			asprintf(&prompt, "Enter password for %s@%s: ",
+			ret = asprintf(&prompt, "Enter password for %s@%s: ",
 				config[CONFIG_XAUTH_USERNAME],
 				config[CONFIG_IPSEC_GATEWAY]);
+			if (ret == -1)
+				error(1, errno, "can't build password question string");
 			break;
 		default:
 			continue;

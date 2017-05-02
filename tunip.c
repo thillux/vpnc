@@ -983,6 +983,7 @@ void vpnc_doit(struct sa_block *s)
 {
 	struct sigaction act;
 	struct encap_method meth;
+	int ret;
 
 	const char *pidfile = config[CONFIG_PID_FILE];
 
@@ -1038,7 +1039,9 @@ void vpnc_doit(struct sa_block *s)
 	signal(SIGINT, killit);
 	signal(SIGTERM, killit);
 
-	chdir("/");
+	ret = chdir("/");
+	if (ret == -1)
+		error(1, errno, "can't change dir to /'");
 
 	if (!opt_nd) {
 		pid_t pid;

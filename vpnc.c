@@ -335,8 +335,13 @@ static void init_netaddr(struct in_addr *net, const char *string)
 
 static void setup_tunnel(struct sa_block *s)
 {
+	int ret;
+	
 	setenv("reason", "pre-init", 1);
-	system(config[CONFIG_SCRIPT]);
+	ret = system(config[CONFIG_SCRIPT]);
+	if(WEXITSTATUS(ret) != 0) {
+		error(1, errno, "can't execute config script");
+	}
 
 	if (config[CONFIG_IF_NAME])
 		memcpy(s->tun_name, config[CONFIG_IF_NAME], strlen(config[CONFIG_IF_NAME]));
@@ -370,7 +375,10 @@ static void setup_tunnel(struct sa_block *s)
 		}
 		if (mtu > 0) {
 			char *strbuf;
-			asprintf(&strbuf, "%d", mtu);
+			ret = asprintf(&strbuf, "%d", mtu);
+			if (ret == 1) {
+				error(1, errno, "can't build mtu string");
+			}
 			setenv("INTERNAL_IP4_MTU", strbuf, 1);
 			free(strbuf);
 		}
@@ -387,17 +395,28 @@ static void atexit_close(void)
 
 static void config_tunnel(struct sa_block *s)
 {
+	int ret;
+
 	setenv("VPNGATEWAY", inet_ntoa(s->dst), 1);
 	setenv("reason", "connect", 1);
-	system(config[CONFIG_SCRIPT]);
+	ret = system(config[CONFIG_SCRIPT]);
+	if(WEXITSTATUS(ret) != 0) {
+		error(1, errno, "can't execute config script");
+	}
+
 	s_atexit_sa = s;
 	atexit(atexit_close);
 }
 
 static void close_tunnel(struct sa_block *s)
 {
+	int ret;
+
 	setenv("reason", "disconnect", 1);
-	system(config[CONFIG_SCRIPT]);
+	ret = system(config[CONFIG_SCRIPT]);
+	if(WEXITSTATUS(ret) != 0) {
+		error(1, errno, "can't execute config script");
+	}
 	tun_close(s->tun_fd, s->tun_name);
 }
 
@@ -938,6 +957,7 @@ static int do_config_to_env(struct sa_block *s, struct isakmp_attribute *a)
 	int reject = 0;
 	int seen_address = 0;
 	char *strbuf, *strbuf2;
+	int ret;
 
 	unsetenv("CISCO_BANNER");
 	unsetenv("CISCO_DEF_DOMAIN");
@@ -974,7 +994,10 @@ static int do_config_to_env(struct sa_block *s, struct isakmp_attribute *a)
 			else {
 				uint32_t netaddr = s->our_address.s_addr & ((struct in_addr *)(a->u.lots.data))->s_addr;
 				addenv_ipv4("INTERNAL_IP4_NETMASK", a->u.lots.data);
-				asprintf(&strbuf, "%d", mask_to_masklen(*((struct in_addr *)a->u.lots.data)));
+				ret = asprintf(&strbuf, "%d", mask_to_masklen(*((struct in_addr *)a->u.lots.data)));
+				if (ret == -1) {
+					error(1, errno, "can't create INTERNAL_IP4_NETMASKLEN string");
+				}
 				setenv("INTERNAL_IP4_NETMASKLEN", strbuf, 1);
 				free(strbuf);
 				addenv_ipv4("INTERNAL_IP4_NETADDR",  (uint8_t *)&netaddr);
@@ -1051,7 +1074,9 @@ static int do_config_to_env(struct sa_block *s, struct isakmp_attribute *a)
 			}
 
 			DEBUG(2, printf("got %d acls for split include\n", a->u.acl.count));
-			asprintf(&strbuf, "%d", a->u.acl.count);
+			ret = asprintf(&strbuf, "%d", a->u.acl.count);
+			if (ret == -1)
+				error(1, errno, "can't create CISCO_SPLIT_INC string");
 			setenv("CISCO_SPLIT_INC", strbuf, 1);
 			free(strbuf);
 
@@ -1059,39 +1084,63 @@ static int do_config_to_env(struct sa_block *s, struct isakmp_attribute *a)
 				DEBUG(2, printf("acl %d: ", i));
 				/* NOTE: inet_ntoa returns one static buffer */
 
-				asprintf(&strbuf, "CISCO_SPLIT_INC_%d_ADDR", i);
-				asprintf(&strbuf2, "%s", inet_ntoa(a->u.acl.acl_ent[i].addr));
+				ret = asprintf(&strbuf, "CISCO_SPLIT_INC_%d_ADDR", i);
+				if (ret == -1)
+					error(1, errno, "can't build CISCO_SPLIT_INC_ADDR string");
+				ret = asprintf(&strbuf2, "%s", inet_ntoa(a->u.acl.acl_ent[i].addr));
+				if (ret == -1)
+					error(1, errno, "can't build CISCO_SPLIT_INC_ADDR arg");
 				DEBUG(2, printf("addr: %s/", strbuf2));
 				setenv(strbuf, strbuf2, 1);
 				free(strbuf); free(strbuf2);
 
-				asprintf(&strbuf, "CISCO_SPLIT_INC_%d_MASK", i);
-				asprintf(&strbuf2, "%s", inet_ntoa(a->u.acl.acl_ent[i].mask));
+				ret = asprintf(&strbuf, "CISCO_SPLIT_INC_%d_MASK", i);
+				if (ret == -1)
+					error(1, errno, "can't build CISCO_SPLIT_INC_MASK string");
+				ret = asprintf(&strbuf2, "%s", inet_ntoa(a->u.acl.acl_ent[i].mask));
+				if (ret == -1)
+					error(1, errno, "can't build CISCO_SPLIT_INC_MASK arg");
 				DEBUG(2, printf("%s ", strbuf2));
 				setenv(strbuf, strbuf2, 1);
 				free(strbuf); free(strbuf2);
 
 				/* this is just here because ip route does not accept netmasks */
-				asprintf(&strbuf, "CISCO_SPLIT_INC_%d_MASKLEN", i);
-				asprintf(&strbuf2, "%d", mask_to_masklen(a->u.acl.acl_ent[i].mask));
+				ret = asprintf(&strbuf, "CISCO_SPLIT_INC_%d_MASKLEN", i);
+				if (ret == -1)
+					error(1, errno, "can't build CISCO_SPLIT_INC_MASKLEN string");
+				ret = asprintf(&strbuf2, "%d", mask_to_masklen(a->u.acl.acl_ent[i].mask));
+				if (ret == -1)
+					error(1, errno, "can't build CISCO_SPLIT_INC_MASKLEN string arg");
 				DEBUG(2, printf("(%s), ", strbuf2));
 				setenv(strbuf, strbuf2, 1);
 				free(strbuf); free(strbuf2);
 
-				asprintf(&strbuf, "CISCO_SPLIT_INC_%d_PROTOCOL", i);
-				asprintf(&strbuf2, "%hu", a->u.acl.acl_ent[i].protocol);
+				ret = asprintf(&strbuf, "CISCO_SPLIT_INC_%d_PROTOCOL", i);
+				if (ret == -1)
+					error(1, errno, "can't build CISCO_SPLIT_INC_PROTOCOL string");
+				ret = asprintf(&strbuf2, "%hu", a->u.acl.acl_ent[i].protocol);
+				if (ret == -1)
+					error(1, errno, "can't build CISCO_SPLIT_INC_PROTOCOL arg");
 				DEBUG(2, printf("protocol: %s, ", strbuf2));
 				setenv(strbuf, strbuf2, 1);
 				free(strbuf); free(strbuf2);
 
-				asprintf(&strbuf, "CISCO_SPLIT_INC_%d_SPORT", i);
-				asprintf(&strbuf2, "%hu", a->u.acl.acl_ent[i].sport);
+				ret = asprintf(&strbuf, "CISCO_SPLIT_INC_%d_SPORT", i);
+				if (ret == -1)
+					error(1, errno, "can't build CISCO_SPLIT_SPORT string");
+				ret = asprintf(&strbuf2, "%hu", a->u.acl.acl_ent[i].sport);
+				if (ret == -1)
+					error(1, errno, "can't build CISCO_SPLIT_SPORT arg");
 				DEBUG(2, printf("sport: %s, ", strbuf2));
 				setenv(strbuf, strbuf2, 1);
 				free(strbuf); free(strbuf2);
 
-				asprintf(&strbuf, "CISCO_SPLIT_INC_%d_DPORT", i);
-				asprintf(&strbuf2, "%hu", a->u.acl.acl_ent[i].dport);
+				ret = asprintf(&strbuf, "CISCO_SPLIT_INC_%d_DPORT", i);
+				if (ret == -1)
+					error(1, errno, "can't build CISCO_SPLIT_INC_DPORT string");
+				ret = asprintf(&strbuf2, "%hu", a->u.acl.acl_ent[i].dport);
+				if (ret == -1)
+					error(1, errno, "can't build CISCO_SPLIT_INC_DPORT arg");
 				DEBUG(2, printf("dport: %s\n", strbuf2));
 				setenv(strbuf, strbuf2, 1);
 				free(strbuf); free(strbuf2);
@@ -1380,6 +1429,8 @@ static void do_phase1_am_packet2(struct sa_block *s, const char *shared_key)
 
 		reject = 0;
 		r = parse_isakmp_packet(r_packet, r_length, &reject);
+		if (r == NULL && reject == 0) /* should not happen */
+			error(1, errno, "can't parse isakmp packet");
 
 		/* Verify the correctness of the recieved packet.  */
 		if (reject == 0 && memcmp(r->i_cookie, s->ike.i_cookie, ISAKMP_COOKIE_LENGTH) != 0)
@@ -2328,13 +2379,17 @@ static int do_phase2_xauth(struct sa_block *s)
 					error(2, 0, "authentication failed (requires interactive mode)");
 				} else if (seen_answer || passwd_used || config[CONFIG_XAUTH_INTERACTIVE]) {
 					char *pass, *prompt = NULL;
+					int ret;
 
-					asprintf(&prompt, "%s for VPN %s@%s: ",
+					ret = asprintf(&prompt, "%s for VPN %s@%s: ",
 						(ap->type == ISAKMP_XAUTH_06_ATTRIB_ANSWER) ?
 						"Answer" :
 						(ap->type == ISAKMP_XAUTH_06_ATTRIB_USER_PASSWORD) ?
 						"Password" : "Passcode",
 						config[CONFIG_XAUTH_USERNAME], ntop_buf);
+					if (ret == -1) {
+						error(1, errno, "can't build prompt string");
+					}
 					pass = vpnc_getpass(prompt);
 					free(prompt);
 					if (pass == NULL)

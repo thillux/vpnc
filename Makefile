@@ -61,12 +61,12 @@ VERSION := $(shell sh mk-version)
 RELEASE_VERSION := $(shell cat VERSION)
 
 CC ?= gcc
-CFLAGS ?= -O3 -g
-CFLAGS += -W -Wall -Wmissing-declarations -Wwrite-strings
+CFLAGS ?= -O0 -g -fsanitize=address -fno-omit-frame-pointer
+CFLAGS += -W -Wall -Wextra -Wmissing-declarations -Wwrite-strings
 CFLAGS +=  $(shell libgcrypt-config --cflags) $(CRYPTO_CFLAGS)
 CPPFLAGS += -DVERSION=\"$(VERSION)\"
-LDFLAGS ?= -g
-LIBS += $(shell libgcrypt-config --libs) $(CRYPTO_LDADD)
+LDFLAGS ?= -g 
+LIBS += -lasan $(shell libgcrypt-config --libs) $(CRYPTO_LDADD)
 
 ifeq ($(shell uname -s), SunOS)
 LIBS += -lnsl -lresolv -lsocket
