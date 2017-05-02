@@ -749,7 +749,7 @@ phase2_authpacket(struct sa_block *s, struct isakmp_payload *pl,
 	gcry_md_final(hm);
 	memcpy(p->payload->u.hash.data, gcry_md_read(hm, 0), s->ike.md_len);
 	gcry_md_close(hm);
-
+	
 	flatten_isakmp_packet(p, p_flat, p_size, s->ike.ivlen);
 	free_isakmp_packet(p);
 }
@@ -2177,6 +2177,8 @@ static int do_phase2_notice_check(struct sa_block *s, struct isakmp_packet **r_p
 		reject = unpack_verify_phase2(s, r_packet, r_length, r_p, nonce, nonce_size);
 		if (reject == ISAKMP_N_INVALID_COOKIE) {
 			r_length = sendrecv(s, r_packet, sizeof(r_packet), NULL, 0, 0);
+			if(*r_p != NULL)
+				free_isakmp_packet(*r_p);
 			continue;
 		}
 		if (*r_p == NULL) {
@@ -2212,11 +2214,13 @@ static int do_phase2_notice_check(struct sa_block *s, struct isakmp_packet **r_p
 					else
 						DEBUG(2, printf("got unknown lifetime notice, ignoring..\n"));
 					r_length = sendrecv(s, r_packet, sizeof(r_packet), NULL, 0, 0);
+					free_isakmp_packet(r);					
 					continue;
 				} else if (r->payload->next->u.n.type == ISAKMP_N_IPSEC_INITIAL_CONTACT) {
 					/* why in hell do we get this?? */
 					DEBUG(2, printf("got initial contact notice, ignoring..\n"));
 					r_length = sendrecv(s, r_packet, sizeof(r_packet), NULL, 0, 0);
+					free_isakmp_packet(r);					
 					continue;
 				} else {
 					/* whatever */
@@ -2230,6 +2234,7 @@ static int do_phase2_notice_check(struct sa_block *s, struct isakmp_packet **r_p
 				/* delete notice ==> ignore */
 				DEBUG(2, printf("got delete for old connection, ignoring..\n"));
 				r_length = sendrecv(s, r_packet, sizeof(r_packet), NULL, 0, 0);
+				free_isakmp_packet(r);
 				continue;
 			}
 		}
@@ -2689,7 +2694,7 @@ static void do_phase2_qm(struct sa_block *s)
 		msgid, 0, 0, 0, 0, 0);
 
 	DEBUGTOP(2, printf("S7.3 QM_packet2 validate type\n"));
-	reject = do_phase2_notice_check(s, &r, nonce_i, sizeof(nonce_i)); /* FIXME: LEAK */
+	reject = do_phase2_notice_check(s, &r, nonce_i, sizeof(nonce_i));
 
 	/* Check the transaction type & message ID are OK.  */
 	if (reject == 0 && r->message_id != msgid)
