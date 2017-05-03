@@ -329,7 +329,7 @@ static void init_netaddr(struct in_addr *net, const char *string)
 			memcpy((char *)(net + 1), (char *)&mask, 4);
 		}
 	} else {
-		memset((char *)net, 0, 8);
+		crypto_memzero((char *)net, 8);
 	}
 }
 
@@ -742,7 +742,7 @@ phase2_authpacket(struct sa_block *s, struct isakmp_payload *pl,
 	if (pl != NULL) {
 		flatten_isakmp_payloads(pl, &pl_flat, &pl_size);
 		gcry_md_write(hm, pl_flat, pl_size);
-		memset(pl_flat, 0, pl_size);
+		crypto_memzero(pl_flat, pl_size);
 		free(pl_flat);
 	}
 
@@ -1949,7 +1949,7 @@ static void do_phase1_am_packet2(struct sa_block *s, const char *shared_key)
 			gcry_md_close(hm);
 			hex_dump("skeyid_e", skeyid_e, s->ike.md_len, NULL);
 
-			memset(dh_shared_secret, 0, dh_getlen(s->ike.dh_grp));
+			crypto_memzero(dh_shared_secret, dh_getlen(s->ike.dh_grp));
 			free(dh_shared_secret);
 
 			/* Determine the IKE encryption key.  */
@@ -1975,7 +1975,7 @@ static void do_phase1_am_packet2(struct sa_block *s, const char *shared_key)
 			}
 			hex_dump("enc-key", s->ike.key, s->ike.keylen, NULL);
 
-			memset(skeyid_e, 0, s->ike.md_len);
+			crypto_memzero(skeyid_e, s->ike.md_len);
 			free(skeyid_e);
 		}
 
@@ -1993,7 +1993,7 @@ static void do_phase1_am_packet2(struct sa_block *s, const char *shared_key)
 			memcpy(s->ike.current_iv, gcry_md_read(hm, 0), s->ike.ivlen);
 			gcry_md_close(hm);
 			hex_dump("current_iv", s->ike.current_iv, s->ike.ivlen, NULL);
-			memset(s->ike.current_iv_msgid, 0, 4);
+			crypto_memzero(s->ike.current_iv_msgid, 4);
 		}
 
 		gcry_md_close(skeyid_ctx);
@@ -2404,7 +2404,7 @@ static int do_phase2_xauth(struct sa_block *s)
 					na->u.lots.length = strlen(pass);
 					na->u.lots.data = xallocc(na->u.lots.length);
 					memcpy(na->u.lots.data, pass, na->u.lots.length);
-					memset(pass, 0, na->u.lots.length);
+					crypto_memzero(pass, na->u.lots.length);
 					free(pass);
 				} else {
 					na = new_isakmp_attribute(ap->type, NULL);
@@ -3271,7 +3271,7 @@ int main(int argc, char **argv)
 	gcry_control(GCRYCTL_INIT_SECMEM, 16384, 0);
 	group_init();
 
-	memset(s, 0, sizeof(*s));
+	crypto_memzero(s, sizeof(*s));
 	s->ipsec.encap_mode = IPSEC_ENCAP_TUNNEL;
 	s->ike.timeout = 1000; /* 1 second */
 

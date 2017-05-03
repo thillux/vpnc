@@ -30,6 +30,7 @@
 #include "isakmp-pkt.h"
 #include "math_group.h"
 #include "vpnc.h"
+#include "crypto.h"
 
 void *xallocc(size_t x)
 {
@@ -60,7 +61,7 @@ static uint8_t *flow_reserve_p(struct flow *f, size_t sz)
 			f->base = realloc(f->base, new_len);
 		if (f->base == NULL)
 			error(1, errno, "alloc of %lud bytes failed", (unsigned long)new_len);
-		memset(f->base + f->len, 0, new_len - f->len);
+		crypto_memzero(f->base + f->len, new_len - f->len);
 		f->end = f->base + l;
 		f->len = new_len;
 	}
@@ -106,7 +107,7 @@ static void flow_4(struct flow *f, uint32_t d)
 
 static void init_flow(struct flow *f)
 {
-	memset(f, 0, sizeof(*f));
+	crypto_memzero(f, sizeof(*f));
 }
 
 static void flow_attribute(struct flow *f, struct isakmp_attribute *p)

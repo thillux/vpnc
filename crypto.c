@@ -69,7 +69,7 @@ void crypto_error_free(crypto_error *error)
 	if (error) {
 		if (error->msg)
 			free(error->msg);
-		memset(error, 0, sizeof(crypto_error));
+		crypto_memzero(error, sizeof(crypto_error));
 		free(error);
 	}
 }

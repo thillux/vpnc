@@ -87,6 +87,7 @@
 #include "sysdep.h"
 #include "config.h"
 #include "vpnc.h"
+#include "crypto.h"
 
 #include "tunip.h"
 
@@ -470,7 +471,7 @@ static void encap_udp_send_peer(struct sa_block *s, unsigned char *buf, unsigned
 	if (s->ipsec.natt_active_mode == NATT_ACTIVE_DRAFT_OLD) {
 		s->ipsec.tx.buf -= 8;
 		s->ipsec.tx.buflen += 8;
-		memset(s->ipsec.tx.buf, 0, 8);
+		crypto_memzero(s->ipsec.tx.buf, 8);
 	}
 
 	sent = send(s->esp_fd, s->ipsec.tx.buf, s->ipsec.tx.buflen, 0);

@@ -26,6 +26,8 @@ typedef struct {
 	char *msg;
 } crypto_error;
 
+void crypto_memzero(void *ptr, size_t len);
+
 void crypto_error_set(crypto_error **error, int code, int in_errno, const char *fmt, ...);
 
 void crypto_error_free(crypto_error *error);

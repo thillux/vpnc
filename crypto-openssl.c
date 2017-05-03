@@ -40,7 +40,7 @@ crypto_ctx *crypto_ctx_new(crypto_error **error)
 	OpenSSL_add_all_algorithms();
 	ERR_load_crypto_strings();
 
-	memset(ctx, 0, sizeof(crypto_ctx));
+	OPENSSL_cleanse(ctx, sizeof(crypto_ctx));
 	ctx->stack = sk_X509_new_null();
 	if (!ctx->stack) {
 		crypto_ctx_free(ctx);
@@ -58,7 +58,7 @@ void crypto_ctx_free(crypto_ctx *ctx)
 		if (ctx->stack)
 			sk_X509_free(ctx->stack);
 
-		memset(ctx, 0, sizeof(crypto_ctx));
+		OPENSSL_cleanse(ctx, sizeof(crypto_ctx));
 		free(ctx);
 	}
 }
@@ -326,3 +326,6 @@ out:
 	return hash;
 }
 
+void crypto_memzero(void *ptr, size_t len) {
+	OPENSSL_cleanse(ptr, len);
+}

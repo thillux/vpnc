@@ -66,7 +66,7 @@ void crypto_ctx_free(crypto_ctx *ctx)
 		for (i = 0; i < ctx->num; i++)
 			gnutls_x509_crt_deinit(ctx->stack[i]);
 		gnutls_free(ctx->stack);
-		memset(ctx, 0, sizeof(crypto_ctx));
+		gnutls_memset(ctx, 0, sizeof(crypto_ctx));
 		gnutls_free(ctx);
 	}
 }
@@ -538,3 +538,6 @@ out:
 	return rec_hash;
 }
 
+void crypto_memzero(void *ptr, size_t len) {
+	gnutls_memset(ptr, 0, len);
+}
