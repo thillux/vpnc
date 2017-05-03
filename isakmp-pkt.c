@@ -76,6 +76,8 @@ static size_t flow_reserve(struct flow *f, size_t sz)
 
 static void flow_x(struct flow *f, uint8_t * data, size_t data_len)
 {
+	assert(data != NULL);
+	assert(data_len > 0);
 	memcpy(flow_reserve_p(f, data_len), data, data_len);
 }
 
@@ -114,7 +116,8 @@ static void flow_attribute(struct flow *f, struct isakmp_attribute *p)
 		case isakmp_attr_lots:
 			flow_2(f, p->type);
 			flow_2(f, p->u.lots.length);
-			flow_x(f, p->u.lots.data, p->u.lots.length);
+			if(p->u.lots.data != NULL && p->u.lots.length > 0)
+				flow_x(f, p->u.lots.data, p->u.lots.length);
 			break;
 		case isakmp_attr_16:
 			flow_2(f, p->type | 0x8000);
@@ -161,7 +164,8 @@ static void flow_payload(struct flow *f, struct isakmp_payload *p)
 				num_xform++;
 			flow_1(f, num_xform);
 		}
-		flow_x(f, p->u.p.spi, p->u.p.spi_size);
+		if(p->u.p.spi != NULL && p->u.p.spi_size > 0)
+			flow_x(f, p->u.p.spi, p->u.p.spi_size);
 		flow_payload(f, p->u.p.transforms);
 		break;
 	case ISAKMP_PAYLOAD_T:
@@ -196,7 +200,8 @@ static void flow_payload(struct flow *f, struct isakmp_payload *p)
 		flow_1(f, p->u.n.spi_length);
 		flow_2(f, p->u.n.type);
 		flow_x(f, p->u.n.spi, p->u.n.spi_length);
-		flow_x(f, p->u.n.data, p->u.n.data_length);
+		if(p->u.n.data != NULL && p->u.n.data_length > 0)
+			flow_x(f, p->u.n.data, p->u.n.data_length);
 		break;
 	case ISAKMP_PAYLOAD_D:
 		flow_4(f, p->u.d.doi);
