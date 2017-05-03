@@ -278,14 +278,17 @@ static void cleanup(struct sa_block *s) {
 		s->ike.current_iv = NULL;
 	}
 	if (s->ike.key) {
+		crypto_memzero(s->ike.key, s->ike.keylen);
 		free(s->ike.key);
 		s->ike.key = NULL;
 	}
 	if (s->ipsec.rx.key) {
+		crypto_memzero(s->ipsec.rx.key, s->ipsec.key_len + s->ipsec.md_len);
 		free(s->ipsec.rx.key);
 		s->ipsec.rx.key = NULL;
 	}
 	if (s->ipsec.tx.key) {
+		crypto_memzero(s->ipsec.tx.key, s->ipsec.key_len + s->ipsec.md_len);
 		free(s->ipsec.tx.key);
 		s->ipsec.tx.key = NULL;
 	}
