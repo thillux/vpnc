@@ -37,6 +37,7 @@
 #include <poll.h>
 #include <sys/ioctl.h>
 #include <sys/utsname.h>
+#include <sys/wait.h>
 
 #include <gcrypt.h>
 
