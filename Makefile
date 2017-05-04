@@ -86,14 +86,14 @@ vpnc : $(OBJS) vpnc.o
 vpnc.8 : vpnc.8.template makeman.pl vpnc
 	./makeman.pl
 
-cisco-decrypt : cisco-decrypt.o decrypt-utils.o
+cisco-decrypt : cisco-decrypt.o decrypt-utils.o crypto.o $(CRYPTO_OBJS)
 	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 test-crypto : sysdep.o test-crypto.o crypto.o $(CRYPTO_OBJS)
 	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 .depend: $(SRCS) $(BINSRCS)
-	$(CC) -MM $(SRCS) $(BINSRCS) $(CFLAGS) $(CPPFLAGS) > $@
+	$(CC) -MM $(SRCS) $(BINSRCS) $(CFLAGS) $(CPPFLAGS) $(LIBS) > $@
 
 vpnc-debug.c vpnc-debug.h : isakmp.h enum2debug.pl
 	LC_ALL=C perl -w ./enum2debug.pl isakmp.h >vpnc-debug.c 2>vpnc-debug.h

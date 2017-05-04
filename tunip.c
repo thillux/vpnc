@@ -306,7 +306,7 @@ static int hmac_compute(int md_algo,
 		memcpy(digest, hmac_digest, hmac_len);
 		ret = 0;
 	} else
-		ret = memcmp(digest, hmac_digest, hmac_len);
+		ret = crypto_memcmp(digest, hmac_digest, hmac_len);
 
 	gcry_md_close(md_ctx);
 	return ret;
@@ -613,9 +613,9 @@ static int process_arp(struct sa_block *s, uint8_t *frame)
 		arp->arp_hln != ETH_ALEN ||
 		arp->arp_pln != 4 ||
 		ntohs(arp->arp_op) != ARPOP_REQUEST ||
-		!memcmp(arp->arp_spa, arp->arp_tpa, 4) ||
-		memcmp(eth->ether_shost, s->tun_hwaddr, ETH_ALEN) ||
-		!memcmp(arp->arp_tpa, &s->our_address, 4)) {
+		!crypto_memcmp(arp->arp_spa, arp->arp_tpa, 4) ||
+		crypto_memcmp(eth->ether_shost, s->tun_hwaddr, ETH_ALEN) ||
+		!crypto_memcmp(arp->arp_tpa, &s->our_address, 4)) {
 		/* whatever .. just drop it */
 		return 1;
 	}
@@ -697,7 +697,7 @@ static void process_tun(struct sa_block *s)
 	/* Don't access the contents of the buffer other than byte aligned.
 	 * 12: Offset of ip source address in ip header,
 	 *  4: Length of IP address */
-	if (!memcmp(global_buffer_rx + MAX_HEADER + 12, &s->dst.s_addr, 4)) {
+	if (!crypto_memcmp(global_buffer_rx + MAX_HEADER + 12, &s->dst.s_addr, 4)) {
 		logmsg(LOG_ALERT, "routing loop to %s",
 			inet_ntoa(s->dst));
 		return;

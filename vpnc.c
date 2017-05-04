@@ -176,7 +176,7 @@ void print_vid(const unsigned char *vid, uint16_t len) {
 
 	while (vid_list[vid_index].length) {
 		if (len == vid_list[vid_index].length &&
-			memcmp(vid_list[vid_index].valueptr, vid, len) == 0) {
+			crypto_memcmp(vid_list[vid_index].valueptr, vid, len) == 0) {
 			printf("   (%s)\n", vid_list[vid_index].descr);
 			return;
 		}
@@ -450,7 +450,7 @@ static int recv_ignore_dup(struct sa_block *s, void *recvbuf, size_t recvbufsize
 	hash_len = gcry_md_get_algo_dlen(GCRY_MD_SHA1);
 	resend_check_hash = malloc(hash_len);
 	gcry_md_hash_buffer(GCRY_MD_SHA1, resend_check_hash, recvbuf, recvsize);
-	if (s->ike.resend_hash && memcmp(s->ike.resend_hash, resend_check_hash, hash_len) == 0) {
+	if (s->ike.resend_hash && crypto_memcmp(s->ike.resend_hash, resend_check_hash, hash_len) == 0) {
 		free(resend_check_hash);
 		/* FIXME: if we get a retransmission, we probably should do a retransmission too */
 		DEBUG(2, printf("Received duplicated packet, dropping it!\n"));
@@ -553,15 +553,15 @@ static int isakmp_crypt(struct sa_block *s, uint8_t * block, size_t blocklen, in
 	if (blocklen < ISAKMP_PAYLOAD_O || ((blocklen - ISAKMP_PAYLOAD_O) % s->ike.ivlen != 0))
 		abort();
 
-	if (!enc && (memcmp(block + ISAKMP_I_COOKIE_O, s->ike.i_cookie, ISAKMP_COOKIE_LENGTH) != 0
-		|| memcmp(block + ISAKMP_R_COOKIE_O, s->ike.r_cookie, ISAKMP_COOKIE_LENGTH) != 0)) {
+	if (!enc && (crypto_memcmp(block + ISAKMP_I_COOKIE_O, s->ike.i_cookie, ISAKMP_COOKIE_LENGTH) != 0
+		|| crypto_memcmp(block + ISAKMP_R_COOKIE_O, s->ike.r_cookie, ISAKMP_COOKIE_LENGTH) != 0)) {
 		DEBUG(2, printf("got packet with wrong cookies\n"));
 		return ISAKMP_N_INVALID_COOKIE;
 	}
 
 	info_ex = block[ISAKMP_EXCHANGE_TYPE_O] == ISAKMP_EXCHANGE_INFORMATIONAL;
 
-	if (memcmp(block + ISAKMP_MESSAGE_ID_O, s->ike.current_iv_msgid, 4) != 0) {
+	if (crypto_memcmp(block + ISAKMP_MESSAGE_ID_O, s->ike.current_iv_msgid, 4) != 0) {
 		gcry_md_hd_t md_ctx;
 
 		gcry_md_open(&md_ctx, s->ike.md_algo, 0);
@@ -684,7 +684,7 @@ static uint16_t unpack_verify_phase2(struct sa_block *s, uint8_t * r_packet,
 		hex_dump("h->u.hash.data", h->u.hash.data, s->ike.md_len, NULL);
 
 		reject = 0;
-		if (memcmp(h->u.hash.data, expected_hash, s->ike.md_len) != 0)
+		if (crypto_memcmp(h->u.hash.data, expected_hash, s->ike.md_len) != 0)
 			reject = ISAKMP_N_AUTHENTICATION_FAILED;
 		gcry_md_close(hm);
 #if 0
@@ -1438,7 +1438,7 @@ static void do_phase1_am_packet2(struct sa_block *s, const char *shared_key)
 			error(1, errno, "can't parse isakmp packet");
 
 		/* Verify the correctness of the recieved packet.  */
-		if (reject == 0 && memcmp(r->i_cookie, s->ike.i_cookie, ISAKMP_COOKIE_LENGTH) != 0)
+		if (reject == 0 && crypto_memcmp(r->i_cookie, s->ike.i_cookie, ISAKMP_COOKIE_LENGTH) != 0)
 			reject = ISAKMP_N_INVALID_COOKIE;
 		if (reject == 0)
 			memcpy(s->ike.r_cookie, r->r_cookie, ISAKMP_COOKIE_LENGTH);
@@ -1606,41 +1606,41 @@ static void do_phase1_am_packet2(struct sa_block *s, const char *shared_key)
 				break;
 			case ISAKMP_PAYLOAD_VID:
 				if (rp->u.vid.length == sizeof(VID_XAUTH)
-					&& memcmp(rp->u.vid.data, VID_XAUTH,
+					&& crypto_memcmp(rp->u.vid.data, VID_XAUTH,
 						sizeof(VID_XAUTH)) == 0) {
 					DEBUG(2, printf("peer is XAUTH capable (draft-ietf-ipsec-isakmp-xauth-06)\n"));
 				} else if (rp->u.vid.length == sizeof(VID_NATT_RFC)
-					&& memcmp(rp->u.vid.data, VID_NATT_RFC,
+					&& crypto_memcmp(rp->u.vid.data, VID_NATT_RFC,
 						sizeof(VID_NATT_RFC)) == 0) {
 					if (natt_draft < 1) natt_draft = 2;
 					DEBUG(2, printf("peer is NAT-T capable (RFC 3947)\n"));
 				} else if (rp->u.vid.length == sizeof(VID_NATT_03)
-					&& memcmp(rp->u.vid.data, VID_NATT_03,
+					&& crypto_memcmp(rp->u.vid.data, VID_NATT_03,
 						sizeof(VID_NATT_03)) == 0) {
 					if (natt_draft < 1) natt_draft = 2;
 					DEBUG(2, printf("peer is NAT-T capable (draft-03)\n"));
 				} else if (rp->u.vid.length == sizeof(VID_NATT_02N)
-					&& memcmp(rp->u.vid.data, VID_NATT_02N,
+					&& crypto_memcmp(rp->u.vid.data, VID_NATT_02N,
 						sizeof(VID_NATT_02N)) == 0) {
 					if (natt_draft < 1) natt_draft = 2;
 					DEBUG(2, printf("peer is NAT-T capable (draft-02)\\n\n")); /* sic! */
 				} else if (rp->u.vid.length == sizeof(VID_NATT_02)
-					&& memcmp(rp->u.vid.data, VID_NATT_02,
+					&& crypto_memcmp(rp->u.vid.data, VID_NATT_02,
 						sizeof(VID_NATT_02)) == 0) {
 					if (natt_draft < 1) natt_draft = 2;
 					DEBUG(2, printf("peer is NAT-T capable (draft-02)\n"));
 				} else if (rp->u.vid.length == sizeof(VID_NATT_01)
-					&& memcmp(rp->u.vid.data, VID_NATT_01,
+					&& crypto_memcmp(rp->u.vid.data, VID_NATT_01,
 						sizeof(VID_NATT_01)) == 0) {
 					if (natt_draft < 1) natt_draft = 1;
 					DEBUG(2, printf("peer is NAT-T capable (draft-01)\n"));
 				} else if (rp->u.vid.length == sizeof(VID_NATT_00)
-					&& memcmp(rp->u.vid.data, VID_NATT_00,
+					&& crypto_memcmp(rp->u.vid.data, VID_NATT_00,
 						sizeof(VID_NATT_00)) == 0) {
 					if (natt_draft < 0) natt_draft = 0;
 					DEBUG(2, printf("peer is NAT-T capable (draft-00)\n"));
 				} else if (rp->u.vid.length == sizeof(VID_DPD)
-					&& memcmp(rp->u.vid.data, VID_DPD,
+					&& crypto_memcmp(rp->u.vid.data, VID_DPD,
 						sizeof(VID_DPD)) == 0) {
 					if (s->ike.dpd_idle != 0) {
 						gcry_create_nonce(&s->ike.dpd_seqno, sizeof(s->ike.dpd_seqno));
@@ -1652,11 +1652,11 @@ static void do_phase1_am_packet2(struct sa_block *s, const char *shared_key)
 						DEBUG(2, printf("ignoring that peer is DPD capable (RFC3706)\n"));
 					}
 				} else if (rp->u.vid.length == sizeof(VID_NETSCREEN_15)
-					&& memcmp(rp->u.vid.data, VID_NETSCREEN_15,
+					&& crypto_memcmp(rp->u.vid.data, VID_NETSCREEN_15,
 						sizeof(VID_NETSCREEN_15)) == 0) {
 					DEBUG(2, printf("peer is using ScreenOS 5.3, 5.4 or 6.0\n"));
 				} else if (rp->u.vid.length == sizeof(VID_HEARTBEAT_NOTIFY)
-					&& memcmp(rp->u.vid.data, VID_HEARTBEAT_NOTIFY,
+					&& crypto_memcmp(rp->u.vid.data, VID_HEARTBEAT_NOTIFY,
 						sizeof(VID_HEARTBEAT_NOTIFY)) == 0) {
 					DEBUG(2, printf("peer sent Heartbeat Notify payload\n"));
 				} else {
@@ -1692,7 +1692,7 @@ static void do_phase1_am_packet2(struct sa_block *s, const char *shared_key)
 					gcry_md_close(hm);
 					seen_natd = 1;
 				} else {
-					if (memcmp(s->ike.natd_them, rp->u.natd.data, s->ike.md_len) == 0)
+					if (crypto_memcmp(s->ike.natd_them, rp->u.natd.data, s->ike.md_len) == 0)
 						seen_natd_them = 1;
 				}
 				break;
@@ -1819,7 +1819,7 @@ static void do_phase1_am_packet2(struct sa_block *s, const char *shared_key)
 			hex_dump("expected hash", expected_hash, s->ike.md_len, NULL);
 
 			if (opt_auth_mode == AUTH_MODE_PSK) {
-				if (memcmp(expected_hash, hash->u.hash.data, s->ike.md_len) != 0)
+				if (crypto_memcmp(expected_hash, hash->u.hash.data, s->ike.md_len) != 0)
 					error(2, 0, "hash comparison failed: %s(%d)\ncheck group password!",
 						val_to_string(ISAKMP_N_AUTHENTICATION_FAILED, isakmp_notify_enum_array),
 						ISAKMP_N_AUTHENTICATION_FAILED);
@@ -1852,7 +1852,7 @@ static void do_phase1_am_packet2(struct sa_block *s, const char *shared_key)
 
 					error(2, 0, "The hash-value, which was decrypted from the received signature, and the expected hash-value differ in size.\n");
 				} else {
-					if (memcmp(rec_hash, expected_hash, decr_size) != 0) {
+					if (crypto_memcmp(rec_hash, expected_hash, decr_size) != 0) {
 						printf("Decrypted-Size: %zd\n",decr_size);
 						hex_dump("    decr_hash", rec_hash, decr_size, NULL);
 						hex_dump("expected hash", expected_hash, s->ike.md_len, NULL);
@@ -2019,7 +2019,7 @@ static void do_phase1_am_packet2(struct sa_block *s, const char *shared_key)
 				gcry_md_write(hm, &s->src, sizeof(struct in_addr));
 				gcry_md_write(hm, &n_src_port, sizeof(uint16_t));
 				gcry_md_final(hm);
-				if (memcmp(s->ike.natd_us, gcry_md_read(hm, 0), s->ike.md_len) == 0)
+				if (crypto_memcmp(s->ike.natd_us, gcry_md_read(hm, 0), s->ike.md_len) == 0)
 					seen_natd_us = 1;
 				memcpy(s->ike.natd_us, gcry_md_read(hm, 0), s->ike.md_len);
 				if (opt_natt_mode == NATT_FORCE) {
@@ -3229,7 +3229,7 @@ void process_late_ike(struct sa_block *s, uint8_t *r_packet, ssize_t r_length)
 			 */
 			/* FIXME: any cleanup needed??? */
 
-			if (rp->u.d.num_spi >= 1 && memcmp(rp->u.d.spi[0], &s->ipsec.tx.spi, 4) == 0) {
+			if (rp->u.d.num_spi >= 1 && crypto_memcmp(rp->u.d.spi[0], &s->ipsec.tx.spi, 4) == 0) {
 				free_isakmp_packet(r);
 				do_phase2_qm(s);
 				return;

@@ -28,6 +28,8 @@ typedef struct {
 
 void crypto_memzero(void *ptr, size_t len);
 
+int crypto_memcmp(const void *s1, const void *s2, size_t n);
+
 void crypto_error_set(crypto_error **error, int code, int in_errno, const char *fmt, ...);
 
 void crypto_error_free(crypto_error *error);

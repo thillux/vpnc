@@ -329,3 +329,7 @@ out:
 void crypto_memzero(void *ptr, size_t len) {
 	OPENSSL_cleanse(ptr, len);
 }
+
+int crypto_memcmp(const void *s1, const void *s2, size_t n) {
+	return OPENSSL_memcmp(s1, s2, n);
+}

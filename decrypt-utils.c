@@ -31,6 +31,7 @@
 
 #include "decrypt-utils.h"
 
+#include "crypto.h"
 
 static int hex2bin_c(unsigned int c)
 {
@@ -104,7 +105,7 @@ int deobfuscate(char *ct, int len, const char **resp, char *reslenp)
 
 	gcry_md_hash_buffer(GCRY_MD_SHA1, ht, enc, len);
 
-	if (memcmp(h4, ht, 20) != 0)
+	if (crypto_memcmp(h4, ht, 20) != 0)
 		return -1;
 
 	res = malloc(len);

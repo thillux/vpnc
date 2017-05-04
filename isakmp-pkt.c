@@ -910,7 +910,7 @@ void test_pack_unpack(void)
 	p = parse_isakmp_packet(pack, sizeof(pack), &reject);
 	flatten_isakmp_packet(p, &unpack, &unpack_len, 8);
 	if (unpack_len != sizeof(pack)
-		|| memcmp(unpack, pack, sizeof(pack)) != 0)
+		|| crypto_memcmp(unpack, pack, sizeof(pack)) != 0)
 		abort();
 	free(unpack);
 	free_isakmp_packet(p);
