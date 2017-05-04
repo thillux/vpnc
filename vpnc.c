@@ -38,6 +38,7 @@
 #include <sys/ioctl.h>
 #include <sys/utsname.h>
 #include <sys/wait.h>
+#include <sys/mman.h>
 
 #include <gcrypt.h>
 
@@ -3262,6 +3263,11 @@ void process_late_ike(struct sa_block *s, uint8_t *r_packet, ssize_t r_length)
 
 int main(int argc, char **argv)
 {
+	// prevent memory from being swapped out
+	if (mlockall(0) != 0) {
+		error(1, errno, "locking all memory failed");
+	}
+
 	int do_load_balance;
 	const uint8_t hex_test[] = { 0, 1, 2, 3 };
 	struct sa_block oursa[1];
@@ -3325,6 +3331,10 @@ int main(int argc, char **argv)
 	/* Free resources */
 	DEBUGTOP(2, printf("S9 cleanup\n"));
 	cleanup(s);
+
+	if (munlockall() != 0) {
+		error(1, errno, "unlocking memory failed");
+	}
 
 	return 0;
 }
