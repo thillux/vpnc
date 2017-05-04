@@ -39,7 +39,7 @@ DOCDIR=$(PREFIX)/share/doc/vpnc
 
 # Comment this in to obtain a binary with certificate support which is
 # GPL incompliant though.
-#OPENSSL_GPL_VIOLATION=yes
+OPENSSL_GPL_VIOLATION=yes
 
 CRYPTO_LDADD = $(shell pkg-config --libs gnutls)
 CRYPTO_CFLAGS = $(shell pkg-config --cflags gnutls) -DCRYPTO_GNUTLS

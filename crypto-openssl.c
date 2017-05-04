@@ -20,6 +20,7 @@
 #include <string.h>
 #include <errno.h>
 #include <openssl/pem.h>
+
 #include "config.h"
 #include "sysdep.h"
 #include "crypto.h"
@@ -331,5 +332,5 @@ void crypto_memzero(void *ptr, size_t len) {
 }
 
 int crypto_memcmp(const void *s1, const void *s2, size_t n) {
-	return OPENSSL_memcmp(s1, s2, n);
+	return CRYPTO_memcmp(s1, s2, n);
 }

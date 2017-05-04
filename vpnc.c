@@ -3263,11 +3263,6 @@ void process_late_ike(struct sa_block *s, uint8_t *r_packet, ssize_t r_length)
 
 int main(int argc, char **argv)
 {
-	// prevent memory from being swapped out
-	if (mlockall(0) != 0) {
-		error(1, errno, "locking all memory failed");
-	}
-
 	int do_load_balance;
 	const uint8_t hex_test[] = { 0, 1, 2, 3 };
 	struct sa_block oursa[1];
@@ -3286,6 +3281,13 @@ int main(int argc, char **argv)
 	s->ike.timeout = 1000; /* 1 second */
 
 	do_config(argc, argv);
+
+	/* prevent memory from being swapped out,
+	   call it here to allow printing of help message
+	   without root privileges */
+	if (mlockall(MCL_CURRENT | MCL_FUTURE) != 0) {
+		error(1, errno, "locking all memory failed");
+	}
 
 	DEBUG(1, printf("\nvpnc version " VERSION "\n"));
 	hex_dump("hex_test", hex_test, sizeof(hex_test), NULL);
