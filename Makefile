@@ -64,10 +64,10 @@ CC ?= gcc
 CFLAGS ?= -O3 -g
 CFLAGS += -W -Wall -Wextra -Wmissing-declarations -Wwrite-strings
 CFLAGS +=  $(shell libgcrypt-config --cflags) $(CRYPTO_CFLAGS)
-CFLAGS += -fsanitize=address -fno-omit-frame-pointer -fsanitize=undefined
+#CFLAGS += -fsanitize=address -fno-omit-frame-pointer -fsanitize=undefined
 CPPFLAGS += -DVERSION=\"$(VERSION)\"
 LDFLAGS ?= -g
-LIBS += -lasan -lubsan
+#LIBS += -lasan -lubsan
 LIBS += $(shell libgcrypt-config --libs) $(CRYPTO_LDADD)
 
 ifeq ($(shell uname -s), SunOS)
