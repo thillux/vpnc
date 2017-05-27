@@ -107,17 +107,25 @@ const unsigned char VID_DWR[] = { /* DWR: Delete with reason */
  *	1f07f70eaa6514d3b0fa96542a500407
  *};
  */
-
 const unsigned char VID_CISCO_FRAG[] = { /* "FRAGMENTATION" */
 	0x40, 0x48, 0xB7, 0xD5, 0x6E, 0xBC, 0xE8, 0x85,
 	0x25, 0xE7, 0xDE, 0x7F, 0x00, 0xD6, 0xC2, 0xD3,
 	0x80, 0x00, 0x00, 0x00
+};
+const unsigned char VID_CISCO_FRAG_02[] = { /* "FRAGMENTATION" */
+	0x40, 0x48, 0xB7, 0xD5, 0x6E, 0xBC, 0xE8, 0x85,
+	0x25, 0xE7, 0xDE, 0x7F, 0x00, 0xD6, 0xC2, 0xD3,
+	0xC0, 0x00, 0x00, 0x00
 };
 const unsigned char VID_NETSCREEN_15[] = { /* netscreen 15 */
 	0x16, 0x6f, 0x93, 0x2d, 0x55, 0xeb, 0x64, 0xd8,
 	0xe4, 0xdf, 0x4f, 0xd3, 0x7e, 0x23, 0x13, 0xf0,
 	0xd0, 0xfd, 0x84, 0x51, 0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00
+};
+const unsigned char VID_CISCO_CONCENTRATOR[] = {
+    0x1f, 0x07, 0xf7, 0x0e, 0xaa, 0x65, 0x14, 0xd3,
+    0xb0, 0xfa, 0x96, 0x54, 0x2a, 0x50, 0x01, 0x00
 };
 const unsigned char VID_HEARTBEAT_NOTIFY[] = { /* Heartbeat Notify */
 	0x48, 0x65, 0x61, 0x72, 0x74, 0x42, 0x65, 0x61,
@@ -140,22 +148,24 @@ struct vid_element {
 };
 
 const struct vid_element vid_list[] = {
-	{ VID_XAUTH,		sizeof(VID_XAUTH),	"Xauth" },
-	{ VID_DPD,		sizeof(VID_DPD),	"DPD" },
-	{ VID_UNITY,		sizeof(VID_UNITY),	"Cisco Unity" },
-	{ VID_NATT_00,		sizeof(VID_NATT_00),	"Nat-T 00" },
-	{ VID_NATT_01,		sizeof(VID_NATT_01),	"Nat-T 01" },
-	{ VID_NATT_02,		sizeof(VID_NATT_02),	"Nat-T 02" },
-	{ VID_NATT_02N,		sizeof(VID_NATT_02N),	"Nat-T 02N" },
-	{ VID_NATT_03,		sizeof(VID_NATT_03),	"Nat-T 03" },
-	{ VID_NATT_RFC,		sizeof(VID_NATT_RFC),	"Nat-T RFC" },
-	{ VID_DWR,		sizeof(VID_DWR),	"Delete With Reason" },
-	{ VID_CISCO_FRAG,	sizeof(VID_CISCO_FRAG),	"Cisco Fragmentation" },
-	{ VID_NETSCREEN_15,	sizeof(VID_NETSCREEN_15),	"Netscreen 15" },
-	{ VID_NORTEL_CONT,	sizeof(VID_NORTEL_CONT),	"Nortel Contivity" },
-	{ VID_HEARTBEAT_NOTIFY,	sizeof(VID_HEARTBEAT_NOTIFY),	"Heartbeat Notify" },
+    { VID_XAUTH,               sizeof(VID_XAUTH),                  "Xauth" },
+    { VID_DPD,                 sizeof(VID_DPD),                    "DPD" },
+    { VID_UNITY,               sizeof(VID_UNITY),                  "Cisco Unity" },
+    { VID_NATT_00,             sizeof(VID_NATT_00),                "Nat-T 00" },
+    { VID_NATT_01,             sizeof(VID_NATT_01),                "Nat-T 01" },
+    { VID_NATT_02,             sizeof(VID_NATT_02),                "Nat-T 02" },
+    { VID_NATT_02N,            sizeof(VID_NATT_02N),               "Nat-T 02N" },
+    { VID_NATT_03,             sizeof(VID_NATT_03),                "Nat-T 03" },
+    { VID_NATT_RFC,            sizeof(VID_NATT_RFC),               "Nat-T RFC" },
+    { VID_DWR,                 sizeof(VID_DWR),                    "Delete With Reason" },
+    { VID_CISCO_FRAG,          sizeof(VID_CISCO_FRAG),             "Cisco Fragmentation" },
+    { VID_CISCO_FRAG_02,       sizeof(VID_CISCO_FRAG_02),          "Cisco Fragmentation" },
+    { VID_CISCO_CONCENTRATOR,  sizeof(VID_CISCO_CONCENTRATOR),     "Cisco Concentrator" },
+    { VID_NETSCREEN_15,        sizeof(VID_NETSCREEN_15),           "Netscreen 15" },
+    { VID_NORTEL_CONT,         sizeof(VID_NORTEL_CONT),            "Nortel Contivity" },
+    { VID_HEARTBEAT_NOTIFY,    sizeof(VID_HEARTBEAT_NOTIFY),       "Heartbeat Notify" },
 
-	{ NULL, 0, NULL }
+    { NULL, 0, NULL }
 };
 
 /* What are DWR-Code and DWR-Text ? */
