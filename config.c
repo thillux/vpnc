@@ -50,6 +50,18 @@ enum vendor_enum opt_vendor;
 enum if_mode_enum opt_if_mode;
 uint16_t opt_udpencapport;
 
+char* get_timestamp_str() {
+	const size_t timestamp_size = 20;
+	char* st = (char*) malloc(timestamp_size);
+	memset(st, '\0', timestamp_size);
+	time_t t;
+	struct tm *tm;
+	t = time(NULL);
+	tm = localtime(&t);
+	strftime(st, timestamp_size, "%F %T", tm);
+	return st;
+}
+
 static void log_to_stderr(int priority __attribute__((unused)), const char *format, ...)
 {
 	va_list ap;

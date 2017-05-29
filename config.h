@@ -23,6 +23,8 @@
 
 #include <unistd.h>
 #include <inttypes.h>
+#include <stdlib.h>
+#include <time.h>
 
 #include "vpnc-debug.h"
 
@@ -104,30 +106,24 @@ extern enum natt_mode_enum opt_natt_mode;
 extern enum if_mode_enum opt_if_mode;
 extern uint16_t opt_udpencapport;
 
-#define TIMESTAMP() ({				\
-	char st[20];				\
-	time_t t;				\
-	struct tm *tm;				\
-	t = time(NULL);				\
-	tm = localtime(&t);			\
-	strftime(st, sizeof(st), "%F %T", tm);	\
-	st;					\
-	})
+extern char* get_timestamp_str();
 
-#define DEBUGTOP(LVL, COMMAND) do {			\
-		if (opt_debug >= (LVL)) {		\
-			printf("\n");			\
-			COMMAND;			\
-			printf(" [%s]\n", TIMESTAMP());	\
-		}					\
+#define DEBUGTOP(LVL, COMMAND) do {					\
+		if (opt_debug >= (LVL)) {					\
+			printf("\n");							\
+			COMMAND;								\
+			char* timestamp = get_timestamp_str(); 	\
+			printf(" [%s]\n", timestamp);			\
+			free(timestamp);						\
+		}											\
 	} while (0)
 
 #define DEBUG(LVL, COMMAND) do {		\
-		if (opt_debug >= (LVL)) {	\
-			if (opt_debug > 1)	\
-				printf("   ");	\
-			COMMAND;		\
-		}				\
+		if (opt_debug >= (LVL)) {		\
+			if (opt_debug > 1)			\
+				printf("   ");			\
+			COMMAND;					\
+		}								\
 	} while (0)
 
 extern void hex_dump(const char *str, const void *data, ssize_t len, const struct debug_strings *decode);
