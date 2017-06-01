@@ -1,4 +1,4 @@
-A VPN client compatible with Cisco's EasyVPN equipment.
+# A VPN client compatible with Cisco's EasyVPN equipment.
 
 Supports IPSec (ESP) with Mode Configuration and Xauth.  Supports only
 shared-secret IPSec authentication with Xauth,
@@ -11,7 +11,7 @@ driver support" is needed in kernel.
 Project home page: http://www.unix-ag.uni-kl.de/~massar/vpnc/
 
 
-========= Contents of this file ============================================
+## Contents of this file
 
 
 - General configuration of vpnc
@@ -21,7 +21,7 @@ Project home page: http://www.unix-ag.uni-kl.de/~massar/vpnc/
 - Known problems
 
 
-========= General configuration of vpnc ====================================
+## General configuration of vpnc
 
 
 Required Libraries: libgcrypt (version 1.1.90 for 0.2-rm+zomb-pre7 or later)
@@ -37,20 +37,24 @@ It reads configuration data from the following places:
 
 The configuration information it currently needs is:
 
+```
           Option Config file item
        --gateway IPSec gateway
             --id IPSec ID
      (no option) IPSec secret
       --username Xauth username
      (no option) Xauth password
+```
 
 A sample configuration file is:
 
+```
 # This is a sample configuration file.
 IPSec gateway 127.0.0.1
 IPSec ID laughing-vpn
 IPSec secret hahaha
 Xauth username geoffk
+```
 
 Note that all strings start exactly one space after the keyword
 string, and run to the end of the line.  This lets you put any kind of
@@ -71,7 +75,7 @@ utility instead, which will extract most/all of the required
 information and convert it into a vpnc configuration file.
 
 
-========= Using a modified script ==========================================
+## Using a modified script
 
 
 Please note that vpnc itself does NOT setup routing. You need to do this
@@ -94,28 +98,28 @@ $reason == disconnect: This is called just after vpnc received a signal.
 
 Information is passed from vpnc via environment variables:
 
-#* reason                       -- why this script was called, one of: pre-init connect disconnect
-#* VPNGATEWAY                   -- vpn gateway address (always present)
-#* TUNDEV                       -- tunnel device (always present)
-#* INTERNAL_IP4_ADDRESS         -- address (always present)
-#* INTERNAL_IP4_NETMASK         -- netmask (often unset)
-#* INTERNAL_IP4_DNS             -- list of dns servers
-#* INTERNAL_IP4_NBNS            -- list of wins servers
-#* CISCO_DEF_DOMAIN             -- default domain name
-#* CISCO_BANNER                 -- banner from server
-#* CISCO_SPLIT_INC              -- number of networks in split-network-list
-#* CISCO_SPLIT_INC_%d_ADDR      -- network address
-#* CISCO_SPLIT_INC_%d_MASK      -- subnet mask (for example: 255.255.255.0)
-#* CISCO_SPLIT_INC_%d_MASKLEN   -- subnet masklen (for example: 24)
-#* CISCO_SPLIT_INC_%d_PROTOCOL  -- protocol (often just 0)
-#* CISCO_SPLIT_INC_%d_SPORT     -- source port (often just 0)
-#* CISCO_SPLIT_INC_%d_DPORT     -- destination port (often just 0)
+- reason                       -- why this script was called, one of: pre-init connect disconnect
+- VPNGATEWAY                   -- vpn gateway address (always present)
+- TUNDEV                       -- tunnel device (always present)
+- INTERNAL_IP4_ADDRESS         -- address (always present)
+- INTERNAL_IP4_NETMASK         -- netmask (often unset)
+- INTERNAL_IP4_DNS             -- list of dns servers
+- INTERNAL_IP4_NBNS            -- list of wins servers
+- CISCO_DEF_DOMAIN             -- default domain name
+- CISCO_BANNER                 -- banner from server
+- CISCO_SPLIT_INC              -- number of networks in split-network-list
+- CISCO_SPLIT_INC_%d_ADDR      -- network address
+- CISCO_SPLIT_INC_%d_MASK      -- subnet mask (for example: 255.255.255.0)
+- CISCO_SPLIT_INC_%d_MASKLEN   -- subnet masklen (for example: 24)
+- CISCO_SPLIT_INC_%d_PROTOCOL  -- protocol (often just 0)
+- CISCO_SPLIT_INC_%d_SPORT     -- source port (often just 0)
+- CISCO_SPLIT_INC_%d_DPORT     -- destination port (often just 0)
 
 Currently vpnc-script is not directly configurable from configfiles.
 However, a workaround is to use a "wrapper-script" like this, to
 disable /etc/resolv.conf rewriting and setup a custom split-routing:
 
-------------------------------
+```sh
 #!/bin/sh
 
 # this effectively disables changes to /etc/resolv.conf
@@ -135,14 +139,14 @@ CISCO_SPLIT_INC_0_SPORT=0
 CISCO_SPLIT_INC_0_DPORT=0
 
 . /etc/vpnc/vpnc-script
-------------------------------
+```
 
 Store this example script, for example in /etc/vpnc/custom-script,
 do a "chmod +x /etc/vpnc/custom-script" and add
 "Script /etc/vpnc/custom-script" to your configuration.
 
 
-========= Additional steps to configure hybrid authentication ==============
+## Additional steps to configure hybrid authentication
 
 
 To use the hybrid extension add
@@ -172,7 +176,7 @@ The hash value can be calculated by e.g.
 	openssl x509 -in <ca_certfile.pem> -noout -hash
 
 
-========= Setting up vpnc on Vista 64bit ===================================
+## Setting up vpnc on Vista 64bit
 
 
 1. Install cygwin onto vista.  Details here: http://www.cygwin.com/
@@ -197,7 +201,7 @@ The hash value can be calculated by e.g.
 11. Go to control Panel | Network Connections and rename the TAP device
     to my-tap
 12. create a /etc/vpnc/default.conf file something like this
-------------- begin -------------
+```
 IPSec gateway YOURGATEWAY
 IPSec ID YOURID
 IPSec obfuscated secret YOURREALYLONGHEXVALUE (you can use your clear
@@ -207,11 +211,11 @@ Xauth password YOURPASSWORD
 Interface name my-tap
 Interface mode tap
 Local Port 0
-------------- end ---------------
+```
     See the general config section above and the manpage for details.
 
 
-========= Known problems ===================================================
+## Known problems
 
 
 Known problems:
@@ -227,7 +231,3 @@ client overwrites things like /etc/resolv.conf and maybe the default route.
 Solution:
 Fix your dhcpclient. On Debian that problem can be fixed by installing
 and using resolvconf to modify that file instead of modifying it directly.
-
-
-============================================================================
-
