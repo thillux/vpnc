@@ -17,13 +17,20 @@ Project home page: http://www.unix-ag.uni-kl.de/~massar/vpnc/
 
 ## Contents of this file
 
-
+- Fixes in this repository
 - General configuration of vpnc
 - Using a modified script
 - Additional steps to configure hybrid authentication
 - Setting up vpnc on Vista 64bit
 - Known problems
 
+## Fixes in this repository
+
+- don't swap process memory to disk, as it contains key material
+- secure free of key material
+- compiles with GCC 6
+- fixed some memory leaks
+- checks with asan und ubsan
 
 ## General configuration of vpnc
 
