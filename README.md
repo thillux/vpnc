@@ -1,5 +1,9 @@
 # A VPN client compatible with Cisco's EasyVPN equipment.
 
+```
+WARNING: Pre-Shared-Key + XAUTH is known to be insecure! Use at your own risk!!!
+```
+
 Supports IPSec (ESP) with Mode Configuration and Xauth.  Supports only
 shared-secret IPSec authentication with Xauth,
 AES (256, 192, 128), 3DES, 1DES, MD5, SHA1,
